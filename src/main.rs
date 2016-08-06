@@ -25,6 +25,10 @@ fn main() {
         .build()
         .unwrap_or_else(|e| panic!("Failed to build PistonWindow: {}", e));
 
+        let font = "assets/FiraSans-Regular.ttf";
+        let factory = window.factory.clone();
+        let mut glyphs = Glyphs::new(font, factory).unwrap();
+
     while let Some(e) = window.next() {
 
         if let Some(_) = e.render_args() {
@@ -33,6 +37,14 @@ fn main() {
                 for sq in &squares {
                     rectangle(sq.color, sq.geometry(), c.transform, g);
                 }
+
+                let transform = c.transform.trans(40.0, 40.0);
+                text::Text::new_color([0.0, 1.0, 0.0, 1.0], 32).draw(
+                    "Hello World!",
+                    &mut glyphs,
+                    &c.draw_state,
+                    transform, g
+                );
             });
         }
 
