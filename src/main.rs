@@ -6,7 +6,7 @@ use piston_window::*;
 struct Point(f64, f64);
 
 fn main() {
-    let title = "Hello Piston!";
+    let title = "Goober";
     let mut pos = Point(0.0, 0.0);
     let mut delta = Point(0.0, 0.0);
 
