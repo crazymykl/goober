@@ -1,7 +1,9 @@
 [package]
 name = "goober"
 version = "0.1.0"
-authors = ["Mike MacDonald <crazymykl@gmail.com>"]
+authors = ["Mike MacDonald <crazymykl@gmail.com>",
+           "Lorry Rocha <lorrocha90@gmail.com>",
+           "Chris Cerami <chrisccerami@gmail.com>"]
 
 [dependencies]
 piston_window = "0.51.1"
