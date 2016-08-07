@@ -9,7 +9,7 @@ use std::time::SystemTime;
 #[derive(Debug, Clone)]
 pub struct Point(f64, f64);
 
-const MU: f64 = 1.0;
+const MU: f64 = 0.99;
 const WIDTH: u32 = 1024;
 const HEIGHT: u32 = 800;
 const WAIT_TIME: u32 = 300_000_000; //nanoseconds
