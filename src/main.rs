@@ -108,19 +108,15 @@ fn main() {
 
     fn format_inputs(inputs: &Vec<Button>) -> String {
         let mut string = String::from("");
-        let mut i: i32 = 1;
         for input in inputs {
-            string.push_str(&i.to_string());
-            i += 1;
             match *input {
-                Button::Keyboard(Key::Up)     => string.push_str("Up"),
-                Button::Keyboard(Key::Down)   => string.push_str("Down"),
-                Button::Keyboard(Key::Left)   => string.push_str("Left"),
-                Button::Keyboard(Key::Right)  => string.push_str("Right"),
-                Button::Keyboard(Key::Space)  => string.push_str("Swap"),
+                Button::Keyboard(Key::Up)     => string.push_str("↑"),
+                Button::Keyboard(Key::Down)   => string.push_str("↓"),
+                Button::Keyboard(Key::Left)   => string.push_str("←"),
+                Button::Keyboard(Key::Right)  => string.push_str("→"),
+                Button::Keyboard(Key::Space)  => string.push_str("↔"),
                 _ => ()
             }
-            string.push_str(" ");
         }
         string
     }
