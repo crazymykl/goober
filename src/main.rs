@@ -12,7 +12,7 @@ pub struct Point(f64, f64);
 const MU: f64 = 1.0;
 const WIDTH: u32 = 640;
 const HEIGHT: u32 = 480;
-const WAIT_TIME: u64 = 500;
+const WAIT_TIME: u32 = 300_000_000; //nanoseconds
 
 fn main() {
     let title = "Goober";
@@ -101,7 +101,7 @@ fn main() {
 
     fn wait_time_elapsed(timestamp: SystemTime) -> bool {
         match timestamp.elapsed() {
-            Ok(elapsed) => (elapsed.as_secs() * 1000) >= WAIT_TIME,
+            Ok(elapsed) => elapsed.subsec_nanos() >= WAIT_TIME,
             Err(e) => {println!("{:?}", e); false}
         }
     }
