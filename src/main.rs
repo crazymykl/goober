@@ -20,9 +20,9 @@ fn main() {
     let mut inputs = Vec::new();
     let mut timestamp = SystemTime::now();
     let mut i: usize = 0;
-    let mut squares = [
+    let mut squares = vec![
         Entity::new(Point(0.0, 0.0), [0.3, 0.0, 0.7, 0.5], 25.0, 25.0),
-        Entity::new(Point(100.0, 100.0), [0.7, 0.0, 0.3, 0.5], 25.0, 25.0),
+        Entity::new(Point(100.0, 100.0), [0.7, 0.0, 0.3, 0.5], 25.0, 25.0)
     ];
 
     let mut window: PistonWindow = WindowSettings::new(title, [WIDTH, HEIGHT])
@@ -68,6 +68,13 @@ fn main() {
                     Button::Keyboard(Key::Left)   => inputs.push(button),
                     Button::Keyboard(Key::Right)  => inputs.push(button),
                     Button::Keyboard(Key::Space)  => inputs.push(button),
+                    Button::Keyboard(Key::A)      => squares.push(
+                        Entity::new(
+                            Point(0.0, 0.0),
+                            [0.3, 0.0, 0.7, 0.5],
+                            25.0, 25.0
+                        )
+                    ),
                     Button::Keyboard(Key::Return) => {inputs_submitted = true; inputs.reverse()},
                     _ => ()
                 }
@@ -107,17 +114,15 @@ fn main() {
     }
 
     fn format_inputs(inputs: &Vec<Button>) -> String {
-        let mut string = String::from("");
-        for input in inputs {
-            match *input {
-                Button::Keyboard(Key::Up)     => string.push_str("↑"),
-                Button::Keyboard(Key::Down)   => string.push_str("↓"),
-                Button::Keyboard(Key::Left)   => string.push_str("←"),
-                Button::Keyboard(Key::Right)  => string.push_str("→"),
-                Button::Keyboard(Key::Space)  => string.push_str("↔"),
-                _ => ()
+        inputs.iter().map(|button|
+            match *button {
+                Button::Keyboard(Key::Up)    => "↑",
+                Button::Keyboard(Key::Down)  => "↓",
+                Button::Keyboard(Key::Left)  => "←",
+                Button::Keyboard(Key::Right) => "→",
+                Button::Keyboard(Key::Space) => "↔",
+                _ => ""
             }
-        }
-        string
+        ).collect::<Vec<_>>().concat()
     }
 }
