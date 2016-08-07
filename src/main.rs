@@ -107,17 +107,15 @@ fn main() {
     }
 
     fn format_inputs(inputs: &Vec<Button>) -> String {
-        let mut string = String::from("");
-        for input in inputs {
-            match *input {
-                Button::Keyboard(Key::Up)     => string.push_str("↑"),
-                Button::Keyboard(Key::Down)   => string.push_str("↓"),
-                Button::Keyboard(Key::Left)   => string.push_str("←"),
-                Button::Keyboard(Key::Right)  => string.push_str("→"),
-                Button::Keyboard(Key::Space)  => string.push_str("↔"),
-                _ => ()
+        inputs.iter().map(|button|
+            match *button {
+                Button::Keyboard(Key::Up)    => "↑",
+                Button::Keyboard(Key::Down)  => "↓",
+                Button::Keyboard(Key::Left)  => "←",
+                Button::Keyboard(Key::Right) => "→",
+                Button::Keyboard(Key::Space) => "↔",
+                _ => ""
             }
-        }
-        string
+        ).collect::<Vec<_>>().concat()
     }
 }
