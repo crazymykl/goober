@@ -9,7 +9,7 @@ use std::time::SystemTime;
 #[derive(Debug, Clone)]
 pub struct Point(f64, f64);
 
-const MU: f64 = 1.0;
+const MU: f64 = 0.99;
 const WIDTH: u32 = 1024;
 const HEIGHT: u32 = 800;
 const WAIT_TIME: u32 = 300_000_000; //nanoseconds
@@ -20,9 +20,8 @@ fn main() {
     let mut inputs = Vec::new();
     let mut timestamp = SystemTime::now();
     let mut i: usize = 0;
-    let mut squares = vec![
-        Entity::new(Point(0.0, 0.0), [0.3, 0.0, 0.7, 0.5], 25.0, 25.0),
-        Entity::new(Point(100.0, 100.0), [0.7, 0.0, 0.3, 0.5], 25.0, 25.0)
+    let mut goobs = vec![
+        Entity::new(Point(0.0, 0.0), [0.3, 0.0, 0.7, 0.5], 25.0, 25.0)
     ];
 
     let mut window: PistonWindow = WindowSettings::new(title, [WIDTH, HEIGHT])
@@ -47,11 +46,11 @@ fn main() {
         if let Some(_) = e.render_args() {
             window.draw_2d(&e, |c, g| {
                 clear([0.8, 0.0, 0.8, 1.0], g);
-                for sq in &squares {
-                    image(&sprite, c.transform.trans(sq.geometry()[0], sq.geometry()[1]), g);
+                for goob in &goobs {
+                    image(&sprite, c.transform.trans(goob.geometry()[0], goob.geometry()[1]), g);
                 }
 
-                text::Text::new_color([0.0, 1.0, 0.0, 1.0], 32).draw(
+                text::Text::new_color([0.0, 1.0, 0.0, 1.0], 16).draw(
                     &format_inputs(&inputs),
                     &mut glyphs,
                     &c.draw_state,
@@ -68,13 +67,16 @@ fn main() {
                     Button::Keyboard(Key::Left)   => inputs.push(button),
                     Button::Keyboard(Key::Right)  => inputs.push(button),
                     Button::Keyboard(Key::Space)  => inputs.push(button),
-                    Button::Keyboard(Key::A)      => squares.push(
-                        Entity::new(
+                    Button::Keyboard(Key::A)      => {
+                        goobs.push(
+                            Entity::new(
                             Point(0.0, 0.0),
                             [0.3, 0.0, 0.7, 0.5],
                             25.0, 25.0
-                        )
-                    ),
+                            )
+                        );
+                        inputs.push(button);
+                    },
                     Button::Keyboard(Key::Return) => {inputs_submitted = true; inputs.reverse()},
                     _ => ()
                 }
@@ -85,23 +87,23 @@ fn main() {
             if inputs_submitted && wait_time_elapsed(timestamp) {
                 timestamp = SystemTime::now();
                 match inputs.pop() {
-                    Some(button) => handle_input(button, &mut squares, &mut i),
+                    Some(button) => handle_input(button, &mut goobs, &mut i),
                     None => ()
                 }
             }
-            for square in squares.iter_mut() {
-                square.nudge();
+            for goob in goobs.iter_mut() {
+                goob.nudge();
             }
         }
     }
 
-    fn handle_input(button: Button, squares: &mut [Entity], i: &mut usize) {
+    fn handle_input(button: Button, goobs: &mut [Entity], i: &mut usize) {
         match button {
-            Button::Keyboard(Key::Up)     => squares[*i].adjust_dy(-1.0),
-            Button::Keyboard(Key::Down)   => squares[*i].adjust_dy(1.0),
-            Button::Keyboard(Key::Left)   => squares[*i].adjust_dx(-1.0),
-            Button::Keyboard(Key::Right)  => squares[*i].adjust_dx(1.0),
-            Button::Keyboard(Key::Space)  => if *i == squares.len() - 1 { *i = 0 } else { *i += 1 },
+            Button::Keyboard(Key::Up)     => goobs[*i].adjust_dy(-1.0),
+            Button::Keyboard(Key::Down)   => goobs[*i].adjust_dy(1.0),
+            Button::Keyboard(Key::Left)   => goobs[*i].adjust_dx(-1.0),
+            Button::Keyboard(Key::Right)  => goobs[*i].adjust_dx(1.0),
+            Button::Keyboard(Key::Space)  => if *i == goobs.len() - 1 { *i = 0 } else { *i += 1 },
             _ => ()
         }
     }
@@ -121,6 +123,7 @@ fn main() {
                 Button::Keyboard(Key::Left)  => "←",
                 Button::Keyboard(Key::Right) => "→",
                 Button::Keyboard(Key::Space) => "↔",
+                Button::Keyboard(Key::A)     => "+",
                 _ => ""
             }
         ).collect::<Vec<_>>().concat()
