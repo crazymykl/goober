@@ -81,6 +81,8 @@ fn main() {
                     Some(button) => handle_input(button, &mut goobs, &mut i),
                     None => ()
                 }
+            } else if inputs.len() == 0 {
+                inputs_submitted = false;
             }
             for goob in goobs.iter_mut() {
                 goob.nudge();
