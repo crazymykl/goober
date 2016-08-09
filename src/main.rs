@@ -67,16 +67,7 @@ fn main() {
                     Button::Keyboard(Key::Left)   => inputs.push(button),
                     Button::Keyboard(Key::Right)  => inputs.push(button),
                     Button::Keyboard(Key::Space)  => inputs.push(button),
-                    Button::Keyboard(Key::A)      => {
-                        goobs.push(
-                            Entity::new(
-                            Point(0.0, 0.0),
-                            [0.3, 0.0, 0.7, 0.5],
-                            25.0, 25.0
-                            )
-                        );
-                        inputs.push(button);
-                    },
+                    Button::Keyboard(Key::A)      => inputs.push(button),
                     Button::Keyboard(Key::Return) => {inputs_submitted = true; inputs.reverse()},
                     _ => ()
                 }
@@ -97,13 +88,23 @@ fn main() {
         }
     }
 
-    fn handle_input(button: Button, goobs: &mut [Entity], i: &mut usize) {
+    fn handle_input(button: Button, goobs: &mut Vec<Entity>, i: &mut usize) {
         match button {
             Button::Keyboard(Key::Up)     => goobs[*i].adjust_dy(-1.0),
             Button::Keyboard(Key::Down)   => goobs[*i].adjust_dy(1.0),
             Button::Keyboard(Key::Left)   => goobs[*i].adjust_dx(-1.0),
             Button::Keyboard(Key::Right)  => goobs[*i].adjust_dx(1.0),
             Button::Keyboard(Key::Space)  => if *i == goobs.len() - 1 { *i = 0 } else { *i += 1 },
+            Button::Keyboard(Key::A)      => {
+                let new_position = Point(goobs[*i].geometry()[0], goobs[*i].geometry()[1]);
+                goobs.push(
+                    Entity::new(
+                    new_position,
+                    [0.3, 0.0, 0.7, 0.5],
+                    25.0, 25.0
+                    )
+                );
+            }
             _ => ()
         }
     }
