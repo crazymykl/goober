@@ -62,11 +62,11 @@ fn main() {
         if let Some(button) = e.press_args() {
             if !inputs_submitted {
                 match button {
-                    Button::Keyboard(Key::Up)     => inputs.push(button),
-                    Button::Keyboard(Key::Down)   => inputs.push(button),
-                    Button::Keyboard(Key::Left)   => inputs.push(button),
-                    Button::Keyboard(Key::Right)  => inputs.push(button),
-                    Button::Keyboard(Key::Space)  => inputs.push(button),
+                    Button::Keyboard(Key::Up)     |
+                    Button::Keyboard(Key::Down)   |
+                    Button::Keyboard(Key::Left)   |
+                    Button::Keyboard(Key::Right)  |
+                    Button::Keyboard(Key::Space)  |
                     Button::Keyboard(Key::A)      => inputs.push(button),
                     Button::Keyboard(Key::Return) => {inputs_submitted = true; inputs.reverse()},
                     _ => ()
@@ -77,14 +77,11 @@ fn main() {
         if let Some(_) = e.update_args() {
             if inputs_submitted && wait_time_elapsed(timestamp) {
                 timestamp = SystemTime::now();
-                match inputs.pop() {
-                    Some(button) => handle_input(button, &mut goobs, &mut i),
-                    None => ()
-                }
-            } else if inputs.len() == 0 {
+                if let Some(button) = inputs.pop() { handle_input(button, &mut goobs, &mut i); }
+            } else if inputs.is_empty() {
                 inputs_submitted = false;
             }
-            for goob in goobs.iter_mut() {
+            for goob in &mut goobs {
                 goob.nudge();
             }
         }
@@ -118,7 +115,7 @@ fn main() {
         }
     }
 
-    fn format_inputs(inputs: &Vec<Button>) -> String {
+    fn format_inputs(inputs: &[Button]) -> String {
         inputs.iter().map(|button|
             match *button {
                 Button::Keyboard(Key::Up)    => "↑",
