@@ -18,14 +18,12 @@ pub struct LevelReader {
 impl LevelReader {
     pub fn new(path: &str) -> Self {
         let mut rdr = csv::Reader::from_file(path).unwrap();
-
         let rows = rdr.decode().collect::<csv::Result<Vec<Row>>>().unwrap();
 
         LevelReader {
             data: rows
         }
     }
-
 
     pub fn load_level(&self, world: &Rc<RefCell<CollideWorld>>) -> Vec<Entity> {
         self.data.iter().enumerate().map(|(i, row)| {
@@ -34,8 +32,7 @@ impl LevelReader {
                 (a, b) => Some(Vector2::new(a, b))
             };
 
-            Entity::new(Point2::new(row[0], row[1]), [row[2], row[3], row[4], row[5]], row[6], row[7], vector, world.clone(), (i as usize + 1000))
+            Entity::new(Point2::new(row[0], row[1]), [row[2], row[3], row[4], row[5]], row[6], row[7], vector, world.clone(), (i as usize + 1))
         }).collect()
     }
-
 }
