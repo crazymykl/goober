@@ -4,14 +4,14 @@ extern crate nalgebra as na;
 
 mod entity;
 mod velocity_bouncer;
+mod level_reader;
 
 use std::rc::Rc;
 use std::cell::RefCell;
 use piston_window::*;
-use na::{Point2, Vector2};
 use ncollide::world::CollisionWorld;
-use entity::Entity;
 use velocity_bouncer::VelocityBouncer;
+use level_reader::LevelReader;
 
 const MU: f32 = 1.0;
 const WIDTH: u32 = 640;
@@ -22,16 +22,9 @@ fn main() {
     let mut i = 0;
     let world = Rc::new(RefCell::new(CollisionWorld::new(0.02, true)));
     world.borrow_mut().register_contact_handler("VelocityBouncer", VelocityBouncer);
-    let mut squares = [
-        Entity::new(Point2::new(100.0, 210.0), [0.3, 0.0, 0.7, 0.5], 50.0, 50.0, Some(Vector2::new(0.4, 0.25)), world.clone(), 1),
-        Entity::new(Point2::new(230.0, 100.0), [0.7, 0.0, 0.3, 0.5], 50.0, 50.0, None, world.clone(), 2),
-        Entity::new(Point2::new(150.0, 163.0), [0.7, 0.0, 0.3, 0.5], 25.0, 25.0, None, world.clone(), 3),
-        Entity::new(Point2::new(0.0, HEIGHT as f32 / 2.0), [0.7, 0.0, 0.3, 0.5], 10.0, HEIGHT as f32, None, world.clone(), 4),
-        Entity::new(Point2::new(WIDTH as f32, HEIGHT as f32 / 2.0), [0.7, 0.0, 0.3, 0.5], 10.0, HEIGHT as f32, None, world.clone(), 5),
-        Entity::new(Point2::new(WIDTH as f32 / 2.0, 0.0), [0.7, 0.0, 0.3, 0.5], WIDTH as f32, 10.0, None, world.clone(), 6),
-        Entity::new(Point2::new(WIDTH as f32 / 2.0, HEIGHT as f32), [0.7, 0.0, 0.3, 0.5], WIDTH as f32, 10.0, None, world.clone(), 7),
-        Entity::new(Point2::new(500.0, 310.0), [0.3, 0.0, 0.7, 0.5], 50.0, 50.0, Some(Vector2::new(0.4, 0.25)), world.clone(), 8),
-    ];
+    let lr = LevelReader::new("../levels/level-1.csv");
+
+    let mut squares = lr.load_level(&world);
 
     let mut window: PistonWindow = WindowSettings::new(title, [WIDTH, HEIGHT])
         .exit_on_esc(true)
