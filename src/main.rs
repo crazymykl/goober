@@ -22,7 +22,7 @@ fn main() {
     let mut i = 0;
     let world = Rc::new(RefCell::new(CollisionWorld::new(0.02, true)));
     world.borrow_mut().register_contact_handler("VelocityBouncer", VelocityBouncer);
-    let lr = LevelReader::new("../levels/level-1.csv");
+    let lr = LevelReader::new("levels/level-1.csv");
     let mut squares = lr.load_level(&world);
     let mut window: PistonWindow = WindowSettings::new(title, [WIDTH, HEIGHT])
         .exit_on_esc(true)
