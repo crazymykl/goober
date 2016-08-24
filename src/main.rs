@@ -5,6 +5,7 @@ mod entity;
 use piston_window::*;
 use entity::Entity;
 use std::time::SystemTime;
+use std::fmt;
 
 #[derive(Debug, Clone)]
 pub struct Point(f64, f64);
@@ -62,12 +63,12 @@ fn main() {
         if let Some(button) = e.press_args() {
             if !inputs_submitted {
                 match button {
-                    Button::Keyboard(Key::Up)     |
-                    Button::Keyboard(Key::Down)   |
-                    Button::Keyboard(Key::Left)   |
-                    Button::Keyboard(Key::Right)  |
-                    Button::Keyboard(Key::Space)  |
-                    Button::Keyboard(Key::A)      => inputs.push(button),
+                    Button::Keyboard(Key::Up)     => inputs.push(Action::Up),
+                    Button::Keyboard(Key::Down)   => inputs.push(Action::Down),
+                    Button::Keyboard(Key::Left)   => inputs.push(Action::Left),
+                    Button::Keyboard(Key::Right)  => inputs.push(Action::Right),
+                    Button::Keyboard(Key::Space)  => inputs.push(Action::Swap),
+                    Button::Keyboard(Key::A)      => inputs.push(Action::Spawn),
                     Button::Keyboard(Key::Return) => {inputs_submitted = true; inputs.reverse()},
                     _ => ()
                 }
@@ -87,14 +88,14 @@ fn main() {
         }
     }
 
-    fn handle_input(button: Button, goobs: &mut Vec<Entity>, i: &mut usize) {
-        match button {
-            Button::Keyboard(Key::Up)     => goobs[*i].adjust_dy(-1.0),
-            Button::Keyboard(Key::Down)   => goobs[*i].adjust_dy(1.0),
-            Button::Keyboard(Key::Left)   => goobs[*i].adjust_dx(-1.0),
-            Button::Keyboard(Key::Right)  => goobs[*i].adjust_dx(1.0),
-            Button::Keyboard(Key::Space)  => if *i == goobs.len() - 1 { *i = 0 } else { *i += 1 },
-            Button::Keyboard(Key::A)      => {
+    fn handle_input(action: Action, goobs: &mut Vec<Entity>, i: &mut usize) {
+        match action {
+            Action::Up     => goobs[*i].adjust_dy(-1.0),
+            Action::Down   => goobs[*i].adjust_dy(1.0),
+            Action::Left   => goobs[*i].adjust_dx(-1.0),
+            Action::Right  => goobs[*i].adjust_dx(1.0),
+            Action::Swap   => if *i == goobs.len() - 1 { *i = 0 } else { *i += 1 },
+            Action::Spawn  => {
                 let new_position = Point(goobs[*i].geometry()[0], goobs[*i].geometry()[1]);
                 goobs.push(
                     Entity::new(
@@ -104,7 +105,6 @@ fn main() {
                     )
                 );
             }
-            _ => ()
         }
     }
 
@@ -115,17 +115,30 @@ fn main() {
         }
     }
 
-    fn format_inputs(inputs: &[Button]) -> String {
-        inputs.iter().map(|button|
-            match *button {
-                Button::Keyboard(Key::Up)    => "↑",
-                Button::Keyboard(Key::Down)  => "↓",
-                Button::Keyboard(Key::Left)  => "←",
-                Button::Keyboard(Key::Right) => "→",
-                Button::Keyboard(Key::Space) => "↔",
-                Button::Keyboard(Key::A)     => "+",
-                _ => ""
-            }
-        ).collect::<Vec<_>>().concat()
+    fn format_inputs(inputs: &[Action]) -> String {
+        inputs.iter().cloned().map(|action| action.to_string()).collect::<Vec<_>>().concat()
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum Action {
+    Up,
+    Down,
+    Left,
+    Right,
+    Swap,
+    Spawn
+}
+
+impl fmt::Display for Action {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Action::Up    => write!(f, "↑"),
+            Action::Down  => write!(f, "↓"),
+            Action::Left  => write!(f, "←"),
+            Action::Right => write!(f, "→"),
+            Action::Swap  => write!(f, "↔"),
+            Action::Spawn => write!(f, "+")
+        }
     }
 }
