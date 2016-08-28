@@ -1,4 +1,5 @@
-use {Point, MU, WIDTH, HEIGHT};
+use point::Point;
+use {MU, WIDTH, HEIGHT};
 
 #[derive(Clone)]
 pub struct Entity {
@@ -14,41 +15,41 @@ impl Entity {
         Entity {
             pos: pos,
             color: color,
-            dv: Point(0.0, 0.0),
+            dv: Point{x: 0.0, y: 0.0},
             width: w,
             height: h,
         }
     }
 
     pub fn geometry(&self) -> [f64; 4] {
-        [self.pos.0, self.pos.1, self.width, self.height]
+        [self.pos.x, self.pos.y, self.width, self.height]
     }
 
     pub fn nudge(&mut self) {
-        self.pos.0 += self.dv.0;
-        self.pos.1 += self.dv.1;
+        self.pos.x += self.dv.x;
+        self.pos.y += self.dv.y;
 
-        self.dv.0 *= MU;
-        self.dv.1 *= MU;
+        self.dv.x *= MU;
+        self.dv.y *= MU;
 
         self.clamp();
     }
 
     pub fn adjust_dx(&mut self, dx: f64) {
-        self.dv.0 += dx;
+        self.dv.x += dx;
     }
 
     pub fn adjust_dy(&mut self, dy: f64) {
-        self.dv.1 += dy;
+        self.dv.y += dy;
     }
 
     fn clamp(&mut self) {
         let (w, h) = (self.max_width(), self.max_height());
 
-        if self.pos.0 < 0.0 { self.pos.0 = 0.0 };
-        if self.pos.0 > w   { self.pos.0 = w };
-        if self.pos.1 < 0.0 { self.pos.1 = 0.0 };
-        if self.pos.1 > h   { self.pos.1 = h };
+        if self.pos.x < 0.0 { self.pos.x = 0.0 };
+        if self.pos.x > w   { self.pos.x = w };
+        if self.pos.y < 0.0 { self.pos.y = 0.0 };
+        if self.pos.y > h   { self.pos.y = h };
     }
 
     fn max_height(&self) -> f64 {

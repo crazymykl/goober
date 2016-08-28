@@ -1,14 +1,14 @@
 extern crate piston_window;
 
 mod entity;
+mod action;
+mod point;
 
 use piston_window::*;
 use entity::Entity;
 use std::time::SystemTime;
-use std::fmt;
-
-#[derive(Debug, Clone)]
-pub struct Point(f64, f64);
+use action::Action;
+use point::Point;
 
 const MU: f64 = 0.99;
 const WIDTH: u32 = 1024;
@@ -22,7 +22,7 @@ fn main() {
     let mut timestamp = SystemTime::now();
     let mut i: usize = 0;
     let mut goobs = vec![
-        Entity::new(Point(0.0, 0.0), [0.3, 0.0, 0.7, 0.5], 25.0, 25.0)
+        Entity::new(Point{x: 0.0, y: 0.0}, [0.3, 0.0, 0.7, 0.5], 25.0, 25.0)
     ];
 
     let mut window: PistonWindow = WindowSettings::new(title, [WIDTH, HEIGHT])
@@ -96,7 +96,7 @@ fn main() {
             Action::Right  => goobs[*i].adjust_dx(1.0),
             Action::Swap   => if *i == goobs.len() - 1 { *i = 0 } else { *i += 1 },
             Action::Spawn  => {
-                let new_position = Point(goobs[*i].geometry()[0], goobs[*i].geometry()[1]);
+                let new_position = Point{x: goobs[*i].geometry()[0], y: goobs[*i].geometry()[1]};
                 goobs.push(
                     Entity::new(
                     new_position,
@@ -117,28 +117,5 @@ fn main() {
 
     fn format_inputs(inputs: &[Action]) -> String {
         inputs.iter().cloned().map(|action| action.to_string()).collect::<Vec<_>>().concat()
-    }
-}
-
-#[derive(Debug, Clone)]
-pub enum Action {
-    Up,
-    Down,
-    Left,
-    Right,
-    Swap,
-    Spawn
-}
-
-impl fmt::Display for Action {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            Action::Up    => write!(f, "↑"),
-            Action::Down  => write!(f, "↓"),
-            Action::Left  => write!(f, "←"),
-            Action::Right => write!(f, "→"),
-            Action::Swap  => write!(f, "↔"),
-            Action::Spawn => write!(f, "+")
-        }
     }
 }
