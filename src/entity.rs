@@ -8,6 +8,12 @@ use ncollide::shape::{Cuboid, ShapeHandle2};
 
 pub type CollideWorld = CollisionWorld<Point2<f32>, Isometry2<f32>, Entity>;
 
+#[derive(Debug, Clone, PartialEq)]
+pub enum EntityType {
+    Character,
+    Wall
+}
+
 #[derive(Clone)]
 pub struct Entity {
     color: [f32; 4],
@@ -16,7 +22,7 @@ pub struct Entity {
     height: f32,
     world: Rc<RefCell<CollideWorld>>,
     index: usize,
-    pub entity_type: String
+    pub entity_type: EntityType
 }
 
 
@@ -24,7 +30,7 @@ impl Entity {
     pub fn new(pos: Point2<f32>, color: [f32; 4],
         w: f32, h: f32, velocity: Option<Vector2<f32>>,
         world: Rc<RefCell<CollideWorld>>,
-        idx: usize, entity_type: String) -> Self {
+        idx: usize, entity_type: EntityType) -> Self {
 
         let entity = Entity {
             color: color,

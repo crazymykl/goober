@@ -15,7 +15,7 @@ use velocity_bouncer::VelocityBouncer;
 use level_reader::LevelReader;
 use action::Action;
 use std::time::SystemTime;
-use entity::{Entity, CollideWorld};
+use entity::{Entity, EntityType, CollideWorld};
 use na::{Point2, Vector2};
 
 const MU: f32 = 0.99;
@@ -34,9 +34,9 @@ fn main() {
     let lr = LevelReader::new("levels/level-1.csv");
     let squares = lr.load_level(&world);
     let mut goobs = squares.clone();
-    goobs.retain(|square| square.entity_type == "character");
+    goobs.retain(|square| square.entity_type == EntityType::Character);
     let mut walls = squares.clone();
-    walls.retain(|square| square.entity_type == "wall");
+    walls.retain(|square| square.entity_type == EntityType::Wall);
     let mut window: PistonWindow = WindowSettings::new(title, [WIDTH, HEIGHT])
         .exit_on_esc(true)
         .build()
@@ -122,7 +122,7 @@ fn main() {
                         Some(Vector2::new(0.0, 0.0)),
                         world_clone,
                         new_idx,
-                        String::from("character")
+                        EntityType::Character
                     )
                 );
             }

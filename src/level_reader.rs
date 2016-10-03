@@ -2,7 +2,7 @@ extern crate csv;
 extern crate nalgebra as na;
 extern crate ncollide;
 
-use entity::Entity;
+use entity::{Entity, EntityType};
 use na::{Point2, Vector2};
 use std::rc::Rc;
 use std::cell::RefCell;
@@ -33,9 +33,9 @@ impl LevelReader {
             };
             let entity_type;
             if row[10] == 0.0 {
-                entity_type = String::from("character");
+                entity_type = EntityType::Character;
             } else {
-                entity_type = String::from("wall");
+                entity_type = EntityType::Wall;
             }
             Entity::new(Point2::new(row[0], row[1]), [row[2], row[3], row[4], row[5]], row[6], row[7], vector, world.clone(), i, entity_type)
         }).collect()
