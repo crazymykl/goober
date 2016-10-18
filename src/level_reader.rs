@@ -2,13 +2,13 @@ extern crate csv;
 extern crate nalgebra as na;
 extern crate ncollide;
 
-use entity::Entity;
+use entity::{Entity, EntityType};
 use na::{Point2, Vector2};
 use std::rc::Rc;
 use std::cell::RefCell;
 use entity::CollideWorld;
 
-pub type Row = [f32; 10];
+pub type Row = [f32; 11];
 
 #[derive(Clone,Debug)]
 pub struct LevelReader {
@@ -31,8 +31,12 @@ impl LevelReader {
                 (0.0, 0.0) => None,
                 (a, b) => Some(Vector2::new(a, b))
             };
-
-            Entity::new(Point2::new(row[0], row[1]), [row[2], row[3], row[4], row[5]], row[6], row[7], vector, world.clone(), i)
+            let entity_type = if row[10] == 0.0 {
+                EntityType::Character
+            } else {
+                EntityType::Wall
+            };
+            Entity::new(Point2::new(row[0], row[1]), [row[2], row[3], row[4], row[5]], row[6], row[7], vector, world.clone(), i, entity_type)
         }).collect()
     }
 }
