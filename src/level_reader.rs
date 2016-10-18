@@ -31,12 +31,11 @@ impl LevelReader {
                 (0.0, 0.0) => None,
                 (a, b) => Some(Vector2::new(a, b))
             };
-            let entity_type;
-            if row[10] == 0.0 {
-                entity_type = EntityType::Character;
+            let entity_type = if row[10] == 0.0 {
+                EntityType::Character
             } else {
-                entity_type = EntityType::Wall;
-            }
+                EntityType::Wall
+            };
             Entity::new(Point2::new(row[0], row[1]), [row[2], row[3], row[4], row[5]], row[6], row[7], vector, world.clone(), i, entity_type)
         }).collect()
     }
