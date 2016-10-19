@@ -111,7 +111,7 @@ fn main() {
     }
 
     fn spawn_goob(goobs: &mut Vec<Entity>, i: &mut usize, world: Rc<RefCell<CollideWorld>>) {
-        let new_position = Point2::new(goobs[*i].geometry()[0] as f32, goobs[*i].geometry()[1] as f32);
+        let new_position = Point2::new(goobs[*i].x_pos() as f32, goobs[*i].y_pos() as f32);
         let new_idx = goobs.len() + 5;
         goobs.push(
             Entity::new(

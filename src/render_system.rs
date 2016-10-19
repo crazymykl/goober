@@ -14,7 +14,7 @@ impl RenderSystem {
                         &TextureSettings::new())
                         .unwrap();
                 window.draw_2d(e, |c, g| {
-                    image(&sprite, c.transform.trans(entity.geometry()[0], entity.geometry()[1]), g);
+                    image(&sprite, c.transform.trans(entity.x_pos(), entity.y_pos()), g);
                 });
             },
             None => {

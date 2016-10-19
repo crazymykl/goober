@@ -68,6 +68,14 @@ impl Entity {
         [x as f64, y as f64, self.width as f64, self.height as f64]
     }
 
+    pub fn x_pos(&self) -> f64 {
+        self.geometry()[0]
+    }
+
+    pub fn y_pos(&self) -> f64 {
+        self.geometry()[1]
+    }
+
     pub fn color(&self) -> [f32; 4] {
         self.color
     }
