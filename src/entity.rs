@@ -5,6 +5,7 @@ use na::{Point2, Vector2, Isometry2, Translation};
 use na;
 use ncollide::world::{GeometricQueryType, CollisionGroups, CollisionWorld};
 use ncollide::shape::{Cuboid, ShapeHandle2};
+use action::Action;
 
 pub type CollideWorld = CollisionWorld<Point2<f32>, Isometry2<f32>, Entity>;
 
@@ -80,6 +81,16 @@ impl Entity {
 
             world.deferred_set_position(self.index, new_pos);
             delta_v.set(dv * MU);
+        }
+    }
+
+    pub fn handle_input(&mut self, action: Action) {
+        match action {
+            Action::Up     => self.adjust_dy(-1.0),
+            Action::Down   => self.adjust_dy(1.0),
+            Action::Left   => self.adjust_dx(-1.0),
+            Action::Right  => self.adjust_dx(1.0),
+            _              => {}
         }
     }
 

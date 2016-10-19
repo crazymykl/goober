@@ -106,29 +106,30 @@ fn main() {
 
     fn handle_input(action: Action, goobs: &mut Vec<Entity>, i: &mut usize, world: &Rc<RefCell<CollideWorld>>) {
         match action {
-            Action::Up     => goobs[*i].adjust_dy(-1.0),
-            Action::Down   => goobs[*i].adjust_dy(1.0),
-            Action::Left   => goobs[*i].adjust_dx(-1.0),
-            Action::Right  => goobs[*i].adjust_dx(1.0),
+            Action::Up    |
+            Action::Down  |
+            Action::Left  |
+            Action::Right  => goobs[*i].handle_input(action),
             Action::Swap   => if *i == goobs.len() - 1 { *i = 0 } else { *i += 1 },
-            Action::Spawn  => {
-                let new_position = Point2::new(goobs[*i].geometry()[0] as f32, goobs[*i].geometry()[1] as f32);
-                let world_clone = world.clone();
-                let new_idx = goobs.len() + 5;
-                goobs.push(
-                    Entity::new(
-                        new_position,
-                        [0.3, 0.0, 0.7, 0.5],
-                        25.0,
-                        25.0,
-                        Some(Vector2::new(0.0, 0.0)),
-                        world_clone,
-                        new_idx,
-                        EntityType::Character
-                    )
-                );
-            }
+            Action::Spawn  => spawn_goob(goobs, i, world.clone())
         }
+    }
+
+    fn spawn_goob(goobs: &mut Vec<Entity>, i: &mut usize, world: Rc<RefCell<CollideWorld>>) {
+        let new_position = Point2::new(goobs[*i].geometry()[0] as f32, goobs[*i].geometry()[1] as f32);
+        let new_idx = goobs.len() + 5;
+        goobs.push(
+            Entity::new(
+                new_position,
+                [0.3, 0.0, 0.7, 0.5],
+                25.0,
+                25.0,
+                Some(Vector2::new(0.0, 0.0)),
+                world,
+                new_idx,
+                EntityType::Character
+            )
+        );
     }
 
     fn wait_time_elapsed(timestamp: SystemTime) -> bool {
