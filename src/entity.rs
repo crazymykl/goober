@@ -8,6 +8,8 @@ use ncollide::shape::{Cuboid, ShapeHandle2};
 use action::Action;
 use graphics_component::GraphicsComponent;
 
+const DELTA_V: f32 = 1.0;
+
 pub type CollideWorld = CollisionWorld<Point2<f32>, Isometry2<f32>, Entity>;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -98,23 +100,25 @@ impl Entity {
 
     pub fn handle_input(&mut self, action: Action) {
         match action {
-            Action::Up     => self.adjust_dy(-1.0),
-            Action::Down   => self.adjust_dy(1.0),
-            Action::Left   => self.adjust_dx(-1.0),
-            Action::Right  => self.adjust_dx(1.0),
+            Action::Up     => self.adjust_dy(-DELTA_V),
+            Action::Down   => self.adjust_dy(DELTA_V),
+            Action::Left   => self.adjust_dx(-DELTA_V),
+            Action::Right  => self.adjust_dx(DELTA_V),
             _              => {}
         }
     }
 
     pub fn adjust_dx(&mut self, dx: f32) {
-        if let Some(ref delta_v) = self.velocity {
-            delta_v.set(delta_v.get() + Vector2::new(dx, 0.0));
-        }
+        self.adjust_dv(dx, 0.0);
     }
 
     pub fn adjust_dy(&mut self, dy: f32) {
+        self.adjust_dv(0.0, dy);
+    }
+
+    fn adjust_dv(&mut self, dx: f32, dy: f32) {
         if let Some(ref delta_v) = self.velocity {
-            delta_v.set(delta_v.get() + Vector2::new(0.0, dy));
+            delta_v.set(delta_v.get() + Vector2::new(dx, dy));
         }
     }
 
