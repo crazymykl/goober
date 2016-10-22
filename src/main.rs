@@ -6,6 +6,8 @@ mod entity;
 mod velocity_bouncer;
 mod level_reader;
 mod action;
+mod render_system;
+mod graphics_component;
 
 use std::rc::Rc;
 use std::cell::RefCell;
@@ -17,6 +19,8 @@ use action::Action;
 use std::time::SystemTime;
 use entity::{Entity, EntityType, CollideWorld};
 use na::{Point2, Vector2};
+use render_system::RenderSystem;
+use graphics_component::GraphicsComponent;
 
 const MU: f32 = 0.99;
 const WIDTH: u32 = 640;
@@ -42,29 +46,14 @@ fn main() {
         .build()
         .unwrap_or_else(|e| panic!("Failed to build PistonWindow: {}", e));
 
-    let sprite_path = "./assets/green-blob-hi.png";
-    let sprite = Texture::from_path(
-            &mut window.factory,
-            &sprite_path,
-            Flip::None,
-            &TextureSettings::new())
-            .unwrap();
-
     let font = "assets/FiraSans-Regular.ttf";
     let factory = window.factory.clone();
     let mut glyphs = Glyphs::new(font, factory).unwrap();
 
     while let Some(e) = window.next() {
-
         if let Some(_) = e.render_args() {
             window.draw_2d(&e, |c, g| {
                 clear([0.0, 0.0, 0.0, 1.0], g);
-                for wall in &walls {
-                    rectangle(wall.color(), wall.geometry(), c.transform, g);
-                }
-                for goob in &goobs {
-                    image(&sprite, c.transform.trans(goob.geometry()[0], goob.geometry()[1]), g);
-                }
 
                 text::Text::new_color([0.0, 1.0, 0.0, 1.0], 16).draw(
                     &format_inputs(&inputs),
@@ -73,6 +62,12 @@ fn main() {
                     c.transform.trans(40.0, 40.0), g
                 );
             });
+            for wall in &walls {
+                RenderSystem::render_entity(&wall, &mut window, &e);
+            }
+            for goob in &goobs {
+                RenderSystem::render_entity(&goob, &mut window, &e);
+            }
         }
 
         if let Some(button) = e.press_args() {
@@ -106,29 +101,31 @@ fn main() {
 
     fn handle_input(action: Action, goobs: &mut Vec<Entity>, i: &mut usize, world: &Rc<RefCell<CollideWorld>>) {
         match action {
-            Action::Up     => goobs[*i].adjust_dy(-1.0),
-            Action::Down   => goobs[*i].adjust_dy(1.0),
-            Action::Left   => goobs[*i].adjust_dx(-1.0),
-            Action::Right  => goobs[*i].adjust_dx(1.0),
+            Action::Up    |
+            Action::Down  |
+            Action::Left  |
+            Action::Right  => goobs[*i].handle_input(action),
             Action::Swap   => if *i == goobs.len() - 1 { *i = 0 } else { *i += 1 },
-            Action::Spawn  => {
-                let new_position = Point2::new(goobs[*i].geometry()[0] as f32, goobs[*i].geometry()[1] as f32);
-                let world_clone = world.clone();
-                let new_idx = goobs.len() + 5;
-                goobs.push(
-                    Entity::new(
-                        new_position,
-                        [0.3, 0.0, 0.7, 0.5],
-                        25.0,
-                        25.0,
-                        Some(Vector2::new(0.0, 0.0)),
-                        world_clone,
-                        new_idx,
-                        EntityType::Character
-                    )
-                );
-            }
+            Action::Spawn  => spawn_goob(goobs, i, world.clone())
         }
+    }
+
+    fn spawn_goob(goobs: &mut Vec<Entity>, i: &mut usize, world: Rc<RefCell<CollideWorld>>) {
+        let new_position = Point2::new(goobs[*i].x_pos() as f32, goobs[*i].y_pos() as f32);
+        let new_idx = goobs.len() + 5;
+        goobs.push(
+            Entity::new(
+                new_position,
+                [0.3, 0.0, 0.7, 0.5],
+                25.0,
+                25.0,
+                Some(Vector2::new(0.0, 0.0)),
+                world,
+                new_idx,
+                EntityType::Character,
+                GraphicsComponent{sprite_filename: Some(String::from("./assets/green-blob-hi.png"))}
+            )
+        );
     }
 
     fn wait_time_elapsed(timestamp: SystemTime) -> bool {
