@@ -32,10 +32,10 @@ impl LevelReader {
                 (0.0, 0.0) => None,
                 (a, b) => Some(Vector2::new(a, b))
             };
-            let entity_type = if row[10] == 0.0 {
-                EntityType::Character
-            } else {
-                EntityType::Wall
+            let entity_type = match row[10] {
+                0.0 => EntityType::Character,
+                1.0 => EntityType::Wall,
+                _   => EntityType::Goal
             };
             let graphics_component = graphics_component_for_type(&entity_type);
             Entity::new(Point2::new(row[0], row[1]), [row[2], row[3], row[4], row[5]], row[6], row[7], vector, world.clone(), i, entity_type, graphics_component)
@@ -47,6 +47,7 @@ impl LevelReader {
 fn graphics_component_for_type(entity_type: &EntityType) -> GraphicsComponent {
     match *entity_type {
         EntityType::Character => GraphicsComponent{sprite_filename: Some(String::from("./assets/green-blob-hi.png"))},
-        EntityType::Wall      => GraphicsComponent{sprite_filename: None}
+        EntityType::Wall      => GraphicsComponent{sprite_filename: None},
+        EntityType::Goal      => GraphicsComponent{sprite_filename: None}
     }
 }

@@ -15,7 +15,8 @@ pub type CollideWorld = CollisionWorld<Point2<f32>, Isometry2<f32>, Entity>;
 #[derive(Debug, Clone, PartialEq)]
 pub enum EntityType {
     Character,
-    Wall
+    Wall,
+    Goal
 }
 
 #[derive(Clone)]
@@ -25,11 +26,11 @@ pub struct Entity {
     width: f32,
     height: f32,
     world: Rc<RefCell<CollideWorld>>,
-    index: usize,
+    pub index: usize,
     pub entity_type: EntityType,
-    pub graphics_component: GraphicsComponent
+    pub graphics_component: GraphicsComponent,
+    dead: Rc<Cell<bool>>
 }
-
 
 impl Entity {
     pub fn new(pos: Point2<f32>, color: [f32; 4],
@@ -46,7 +47,8 @@ impl Entity {
             world: world.clone(),
             index: idx,
             entity_type: entity_type,
-            graphics_component: graphics_component
+            graphics_component: graphics_component,
+            dead: Rc::new(Cell::new(false))
         };
 
         let rect = ShapeHandle2::new(Cuboid::new(Vector2::new(w / 2.0, h / 2.0)));
@@ -62,6 +64,10 @@ impl Entity {
         world.update();
 
         entity
+    }
+
+    pub fn dead(&self) -> &Rc<Cell<bool>> {
+        &self.dead
     }
 
     pub fn geometry(&self) -> [f64; 4] {
@@ -128,5 +134,4 @@ impl Entity {
 
         (pos.x - self.width / 2.0, pos.y - self.height / 2.0)
     }
-
 }

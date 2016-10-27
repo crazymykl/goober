@@ -1,7 +1,7 @@
 use entity::Entity;
 use piston_window::*;
 
-pub struct RenderSystem {}
+pub struct RenderSystem;
 
 impl RenderSystem {
     pub fn render_entity(entity: &Entity, window: &mut PistonWindow, e: &Event) {
