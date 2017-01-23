@@ -8,6 +8,7 @@ mod level_reader;
 mod action;
 mod render_system;
 mod graphics_component;
+mod win_or_lose_system;
 
 use std::rc::Rc;
 use std::cell::RefCell;
@@ -17,10 +18,12 @@ use velocity_bouncer::VelocityBouncer;
 use level_reader::LevelReader;
 use action::Action;
 use std::time::SystemTime;
+use std::path::Path;
 use entity::{Entity, EntityType, CollideWorld};
-use na::{Point2, Vector2};
+use na::{Point2, Vector2, Translation};
 use render_system::RenderSystem;
 use graphics_component::GraphicsComponent;
+use win_or_lose_system::{WinOrLoseSystem,VictoryState};
 
 const MU: f32 = 0.99;
 const WIDTH: u32 = 640;
@@ -29,18 +32,20 @@ const WAIT_TIME: u32 = 300_000_000; //nanoseconds
 
 fn main() {
     let title = "Goober";
+    let mut level = 1;
     let mut i = 0;
+    let mut spawn_i = 0;
     let mut inputs_submitted = false;
     let mut inputs = Vec::new();
     let mut timestamp = SystemTime::now();
-    let world = Rc::new(RefCell::new(CollisionWorld::new(0.02, true)));
+    let mut world = Rc::new(RefCell::new(CollisionWorld::new(0.02, true)));
     world.borrow_mut().register_contact_handler("VelocityBouncer", VelocityBouncer);
-    let lr = LevelReader::new("levels/level-1.csv");
-    let squares = lr.load_level(&world);
+    let mut lr = LevelReader::new("levels/level-1.csv");
+    let mut squares = lr.load_level(&world);
     let mut goobs = squares.clone();
     goobs.retain(|square| square.entity_type == EntityType::Character);
     let mut walls = squares.clone();
-    walls.retain(|square| square.entity_type == EntityType::Wall);
+    walls.retain(|square| square.entity_type != EntityType::Character);
     let mut window: PistonWindow = WindowSettings::new(title, [WIDTH, HEIGHT])
         .exit_on_esc(true)
         .build()
@@ -88,7 +93,7 @@ fn main() {
         if let Some(_) = e.update_args() {
             if inputs_submitted && wait_time_elapsed(timestamp) {
                 timestamp = SystemTime::now();
-                if let Some(button) = inputs.pop() { handle_input(button, &mut goobs, &mut i, &world); }
+                if let Some(button) = inputs.pop() { handle_input(button, &mut goobs, &mut i, &world, &mut spawn_i, &squares); }
             } else if inputs.is_empty() {
                 inputs_submitted = false;
             }
@@ -96,23 +101,81 @@ fn main() {
             for goob in &mut goobs {
                 goob.nudge();
             }
+            goobs.retain(|entity|
+                if entity.dead().get() {
+                    let pos = world.borrow_mut().collision_object(entity.index).unwrap().position;
+                    let new_pos = pos.append_translation(&Vector2{x: -1000.0, y: -1000.0});
+                    world.borrow_mut().deferred_set_position(entity.index, new_pos); // move the goob offscreen until the level ends
+                    i = 0;
+                    false
+                } else {
+                    true
+                }
+            );
+            walls.retain(|entity|
+                if entity.dead().get() {
+                    world.borrow_mut().deferred_remove(entity.index);
+                    false
+                } else {
+                    true
+                }
+            );
+            let win_or_loss = WinOrLoseSystem::win_or_loss(&goobs, &walls);
+            match win_or_loss {
+                Some(victory_state) => {
+                    match victory_state {
+                        VictoryState::Win  => {
+                            level += 1;
+                            let next_level = format!("levels/level-{}.csv", level);
+                            if Path::new(&next_level).exists() {
+                                load_level(next_level, &mut world, &mut lr, &mut squares, &mut goobs, &mut walls, &mut inputs_submitted, &mut inputs);
+                            } else {
+                                std::process::exit(0);
+                            }
+                        }
+                        VictoryState::Loss => {
+                            let current_level = format!("levels/level-{}.csv", level);
+                            load_level(current_level, &mut world, &mut lr, &mut squares, &mut goobs, &mut walls, &mut inputs_submitted, &mut inputs);
+                        }
+                    }
+                },
+                None => {}
+            }
         }
     }
 
-    fn handle_input(action: Action, goobs: &mut Vec<Entity>, i: &mut usize, world: &Rc<RefCell<CollideWorld>>) {
-        match action {
-            Action::Up    |
-            Action::Down  |
-            Action::Left  |
-            Action::Right  => goobs[*i].handle_input(action),
-            Action::Swap   => if *i == goobs.len() - 1 { *i = 0 } else { *i += 1 },
-            Action::Spawn  => spawn_goob(goobs, i, world.clone())
+    fn load_level(level_name: String, world: &mut Rc<RefCell<CollideWorld>>, lr: &mut LevelReader, squares: &mut Vec<Entity>, goobs: &mut Vec<Entity>, walls: &mut Vec<Entity>, inputs_submitted: &mut bool, inputs: &mut Vec<Action>) {
+        *world = Rc::new(RefCell::new(CollisionWorld::new(0.02, true)));
+        world.borrow_mut().register_contact_handler("VelocityBouncer", VelocityBouncer);
+        *lr = LevelReader::new(&level_name);
+        *squares = lr.load_level(&world);
+        *goobs = squares.clone();
+        goobs.retain(|square| square.entity_type == EntityType::Character);
+        *walls = squares.clone();
+        walls.retain(|square| square.entity_type != EntityType::Character);
+        *inputs_submitted = false;
+        inputs.clear();
+    }
+
+    fn handle_input(action: Action, goobs: &mut Vec<Entity>, i: &mut usize, world: &Rc<RefCell<CollideWorld>>, spawn_i: &mut usize, squares: &Vec<Entity>) {
+        if !goobs.is_empty() {
+            match action {
+                Action::Up    |
+                Action::Down  |
+                Action::Left  |
+                Action::Right  => goobs[*i].handle_input(action),
+                Action::Swap   => if *i == goobs.len() - 1 { *i = 0 } else { *i += 1 },
+                Action::Spawn  => {
+                    *spawn_i += 1;
+                    let new_idx = squares.len() + *spawn_i;
+                    spawn_goob(goobs, i, world.clone(), new_idx);
+                }
+            }
         }
     }
 
-    fn spawn_goob(goobs: &mut Vec<Entity>, i: &mut usize, world: Rc<RefCell<CollideWorld>>) {
+    fn spawn_goob(goobs: &mut Vec<Entity>, i: &mut usize, world: Rc<RefCell<CollideWorld>>, new_idx: usize) {
         let new_position = Point2::new(goobs[*i].x_pos() as f32, goobs[*i].y_pos() as f32);
-        let new_idx = goobs.len() + 5;
         goobs.push(
             Entity::new(
                 new_position,
